@@ -1,0 +1,56 @@
+--- abi-tools-0.3/minixemu/minix.c.orig	2001-11-12 11:29:24.000000000 +0100
++++ abi-tools-0.3/minixemu/minix.c	2008-01-19 19:30:20.253446347 +0100
+@@ -26,7 +26,7 @@
+ #include "minix.h" 
+ 
+ extern int minix_syscall(minix_msg *m, int syscall, int fs);
+-volatile struct vm86_struct minix_cpu;
++volatile struct vm86plus_struct minix_cpu;
+ static unsigned char minix_space[128*1024+15];	/* The Linux vm will deal with not allocating the unused pages */
+ static unsigned char *minix_base;		/* Paragraph aligned */
+ 
+@@ -130,7 +130,7 @@ int run_minix()
+ 	/*
+ 	 *	Execute 8086 code for a while.
+ 	 */
+-	int err=vm86((struct vm86_struct *)&minix_cpu);
++	int err=vm86(VM86_ENTER, (struct vm86plus_struct *)&minix_cpu);
+ 	switch(VM86_TYPE(err))
+ 	{
+ 		/*
+--- abi-tools-0.3/minixemu/minix.h.orig	2001-11-12 11:12:59.000000000 +0100
++++ abi-tools-0.3/minixemu/minix.h	2008-01-19 19:30:34.862278857 +0100
+@@ -127,9 +127,9 @@ struct minix_stat
+ 	unsigned short st_gid;
+ 	unsigned short st_rdev;
+ 	int st_size;
+-	int st_atime;
+-	int st_mtime;
+-	int st_ctime;
++	int mst_atime;
++	int mst_mtime;
++	int mst_ctime;
+ };
+ 
+ 
+@@ -250,4 +250,4 @@ typedef struct
+ 
+ #define MINIX_DSEG(x)		((unsigned char *)(((x)&0xFFFF)+(minix_cpu.regs.ds<<4)))
+ 
+-extern volatile struct vm86_struct minix_cpu;
++extern volatile struct vm86plus_struct minix_cpu;
+--- abi-tools-0.3/minixemu/minix_sys.c.orig	2001-11-12 11:19:25.000000000 +0100
++++ abi-tools-0.3/minixemu/minix_sys.c	2008-01-19 19:26:59.337996829 +0100
+@@ -50,9 +50,9 @@ static void squash_stat(struct stat *s, 
+ 	ms->st_gid=s->st_gid;
+ 	ms->st_rdev=s->st_rdev;
+ 	ms->st_size=s->st_size;
+-	ms->st_atime=s->st_atime;
+-	ms->st_mtime=s->st_mtime;
+-	ms->st_ctime=s->st_ctime;
++	ms->mst_atime=s->st_atime;
++	ms->mst_mtime=s->st_mtime;
++	ms->mst_ctime=s->st_ctime;
+ }
+ 
+ /*
